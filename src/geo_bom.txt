@@ -1,0 +1,10 @@
+perfiles de la base y mesa 30x30 
+4 x 800 
+      perfil interno soporte husillo 
+2 x 740 
+4 x 1060
+perfiles del carro 2x30x30 (dobles) 
+2 x 1040
+altura entre perfil de la base (top) y perfil de carro (top): 82.0
+perfiles elevacion mesa 30x30 
+10 x 90
