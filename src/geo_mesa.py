@@ -157,7 +157,10 @@ rod_d = 20. #diameter of the rods
 leadscrew_tot_l = 500.
 leadscrew_d = 16. # or 12.
 
+alu_port_v_l = 400.
+
 alu_tray_name = 'alu_tray'
+
 
 print ('travesanos ancho: ', str(alu_len_w))
 # los travesanos en direccion x, cubren el ancho
@@ -266,13 +269,12 @@ for x_i in [-1,1]:  # izquierda y derecha
         alu_carr_trav_h = kcomp.SCE20UU_Pr30b['axis_h']
 
         # perfiles del carro
-
-        if x_i == 1:
+        if x_i == 1: # estan centrados en x
             alu_car_name = 'alu_car'
             for it_y in [-1,0]: # a double profile
-                alu_car_y  = (pos_0 +  DraftVecUtils.scale(VZ, axis_h)
-                 + linbear_pos_y +
+                alu_car_pos  = (pos_0 +  DraftVecUtils.scale(VZ, axis_h)
                 + DraftVecUtils.scale(VZ, alu_carr_trav_h)
+                + linbear_pos_y +
                 + DraftVecUtils.scale(VY,it_y*d_linbear_house['bolt_sep_l']))
                
                 h_alu = comps.getaluprof_dir(d_alu, length=alu_car_l,
@@ -283,9 +285,31 @@ for x_i in [-1,1]:  # izquierda y derecha
                                              ref_w = 1, # centered
                                              ref_p = 2, # at bottom
                                              wfco = 1,
-                                             pos = alu_car_y,
+                                             pos = alu_car_pos,
                                              name = alu_car_name)
                 h_alu.color(carro_color)
+        #perfiles verticales del portico
+        if y_i == 0: # solo hay uno por cada lado
+            for it_x in[0,1]: # a double profile
+                alu_port_name = 'alu_port_v' + str_neg(x_i,p=1, n=0)
+                alu_port_v_pos  = (pos_0 +  DraftVecUtils.scale(VZ, axis_h)
+                 + DraftVecUtils.scale(VX, x_i*(alu_len_w/2. +it_x*alu_w))
+                 + DraftVecUtils.scale(VZ, alu_carr_trav_h)
+                 + linbear_pos_y +
+                 + DraftVecUtils.scale(VY,alu_w))
+               
+                h_alu = comps.getaluprof_dir(d_alu, length=alu_port_v_l,
+                                      fc_axis_l = VZ,
+                                      fc_axis_w = DraftVecUtils.scale(VX,x_i),
+                                      fc_axis_p = VY,
+                                      ref_l = 2, # at bottom
+                                      ref_w = 2, # at the end
+                                      ref_p = 1, # centered
+                                      wfco = 1,
+                                      pos = alu_port_v_pos,
+                                      name = alu_port_name)
+                h_alu.color(carro_color)
+
 
                 
 
@@ -304,6 +328,10 @@ print (str(mesa_h))
 file_comps.write('4 x ' + str(alu_len_d) + '\n')
 file_comps.write('perfiles del carro 2x30x30 (dobles) \n')
 file_comps.write('2 x ' + str(alu_car_l) + '\n')
+
+file_comps.write('perfiles del portico 2x30x30 (dobles) \n')
+file_comps.write('2 x ' + str(alu_port_v_l) + '\n')
+
 
 file_comps.write('altura entre perfil de la base (top) y perfil de carro (top): ')
 file_comps.write(str(min_mesa_h) + '\n')
