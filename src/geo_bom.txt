@@ -4,9 +4,13 @@ perfiles de la base y mesa 30x30
 2 x 740 
 4 x 1060
 perfiles del carro 2x30x30 (dobles) 
-2 x 1040
+2 x 980
 perfiles del portico 2x30x30 (dobles) 
-2 x 400.0
+2 x 350.0
+también pueden ser simples 30x30 
+2 x 350.0
+puente del portico 
+1 x 810.0
 altura entre perfil de la base (top) y perfil de carro (top): 82.0
 perfiles elevacion mesa 30x30 
 10 x 90

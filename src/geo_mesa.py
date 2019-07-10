@@ -134,9 +134,12 @@ alu_len_v = 100  #perfiles a lo alto REVISAR
 alu_len_w = tot_w #perfiles a lo ancho
 alu_len_w_int = tot_w -  2 * alu_w #perfiles a lo ancho interiores
 
+# portico horizontal parte arriba
+alu_len_gantry = tot_w + 10. # poner un extra para que no rocen
+
 # carriage width (length=
-#2: each side. 4: to have a double profile and a double bracket
-alu_car_l = tot_w + 2*4*alu_w #2: each side. 4: to have a double profile and 
+#2: each side. 3: to have a double profile and a double bracket
+alu_car_l = tot_w + 2*3*alu_w
 
 carro_color = fcfun.ORANGE_08
 d_color = fcfun.GREEN_07
@@ -150,6 +153,7 @@ pos_0_x = 0.
 pos_0_y = 0.
 pos_0_z = 0.
 
+# todas las posiciones como si pos_0 estuviese en (0,0,0)
 pos_0 = FreeCAD.Vector(pos_0_x, pos_0_y, pos_0_z)
 
 rod_d = 20. #diameter of the rods
@@ -157,7 +161,11 @@ rod_d = 20. #diameter of the rods
 leadscrew_tot_l = 500.
 leadscrew_d = 16. # or 12.
 
-alu_port_v_l = 400.
+# perfiles del portico en altura
+alu_len_port_v = 400.
+
+# perfiles que bajan del portico para empujar
+alu_len_empuje_v = 250.
 
 alu_tray_name = 'alu_tray'
 
@@ -166,7 +174,7 @@ print ('travesanos ancho: ', str(alu_len_w))
 # los travesanos en direccion x, cubren el ancho
 for y_i in [0,1]:  # 
     alu_name = 'alu_travesano_base' + '_y' + str(y_i)
-    alu_base_traves_pos = pos_0 + DraftVecUtils.scale(VY, y_i*(alu_len_d+alu_w))
+    alu_base_traves_pos = DraftVecUtils.scale(VY, y_i*(alu_len_d+alu_w))
     h_alu = comps.getaluprof_dir(d_alu, length=alu_len_w,
                                  fc_axis_l = VX,
                                  fc_axis_w = VY,
@@ -175,7 +183,7 @@ for y_i in [0,1]:  #
                                  ref_w = 1, # centered
                                  ref_p = 2, # at top
                                  wfco = 1,
-                                 pos = alu_base_traves_pos,
+                                 pos = alu_base_traves_pos + pos_0,
                                  name = alu_name)
 
     # soportes de ejes
@@ -190,11 +198,11 @@ for y_i in [0,1]:  #
                              ref_wc = -1, #at the end
                              ref_dc = 1,
                              tol=0, # not to print
-                             pos=sh_pos,
+                             pos=sh_pos + pos_0,
                              name = sh_name)
 
 # travesano interno para el final del husillo y su soporte
-alu_base_traves_int_pos = pos_0 + DraftVecUtils.scale(VY, leadscrew_tot_l)
+alu_base_traves_int_pos = DraftVecUtils.scale(VY, leadscrew_tot_l)
 h_alu = comps.getaluprof_dir(d_alu, length=alu_len_w_int,
                                  fc_axis_l = VX,
                                  fc_axis_w = VY,
@@ -203,7 +211,7 @@ h_alu = comps.getaluprof_dir(d_alu, length=alu_len_w_int,
                                  ref_w = 1, # centered
                                  ref_p = 2, # at top
                                  wfco = 1,
-                                 pos = alu_base_traves_int_pos,
+                                 pos = alu_base_traves_int_pos + pos_0,
                                  name = 'travesano_int')
 
 
@@ -224,11 +232,14 @@ axis_len = alu_len_d + 2*alu_w
 #dictionary of the linear bearing housing
 d_linbear_house = kcomp.SCE20UU_Pr30b
 
+# separacion de los postes verticales del portico de la mesa, a cada lado
+port_sep = 5.
+
 print ('largeros: largo: ', str(alu_len_d))
 # los largueros en direccion y, cubren la profundidad (depth)
 for x_i in [-1,1]:  # izquierda y derecha
     alu_name = 'alu_largo_base' + '_x' + str_neg(x_i)
-    alu_base_largo_pos = (pos_0 + DraftVecUtils.scale(VX, x_i*tot_w/2) 
+    alu_base_largo_pos = (DraftVecUtils.scale(VX, x_i*tot_w/2) 
                              + DraftVecUtils.scale(VY, alu_w/2) )
 
     h_alu = comps.getaluprof_dir(d_alu, length=alu_len_d,
@@ -239,22 +250,23 @@ for x_i in [-1,1]:  # izquierda y derecha
                                  ref_w = 2, # from the side
                                  ref_p = 2, # at top
                                  wfco = 1,
-                                 pos = alu_base_largo_pos,
+                                 pos = alu_base_largo_pos + pos_0,
                                  name = alu_name)
 
     # ejes
-    axis_pos = (pos_0 + DraftVecUtils.scale(VX, x_i*(tot_w/2-axis_cen_w)) 
+    axis_pos = (DraftVecUtils.scale(VX, x_i*(tot_w/2-axis_cen_w)) 
                       + DraftVecUtils.scale(VY, -alu_w/2)
                       + DraftVecUtils.scale(VZ, axis_h)  )
     shp_rod = fcfun.shp_cyl_gen(r = rod_d/2., h=axis_len,
                               axis_h = VY,
                               pos_h = 1,
-                              pos = axis_pos)
+                              pos = axis_pos + pos_0)
     Part.show(shp_rod)
 
     for y_i in [0,1]:  # 
         # Para uno de 4, todos en una pieza
         #linbear_pos_y DraftVecUtils.scale(VY,3*alu_w + y_i*alu_w)
+        linbear1_pos_y = DraftVecUtils.scale(VY,3*alu_w)
         linbear_pos_y = DraftVecUtils.scale(VY,3*alu_w + y_i*3*alu_w)
         linbear_pos  = axis_pos + linbear_pos_y
         h_linbear_house = parts.LinBearHouse(d_linbear_house,
@@ -262,7 +274,7 @@ for x_i in [-1,1]:  # izquierda y derecha
                                              fc_bot_axis=VZ,
                                              axis_center = 1,
                                              mid_center = 1,
-                                             pos = linbear_pos)
+                                             pos = linbear_pos + pos_0)
         # height of the base of the aluminum profile of carriage, from pos_0
 
 
@@ -272,7 +284,7 @@ for x_i in [-1,1]:  # izquierda y derecha
         if x_i == 1: # estan centrados en x
             alu_car_name = 'alu_car'
             for it_y in [-1,0]: # a double profile
-                alu_car_pos  = (pos_0 +  DraftVecUtils.scale(VZ, axis_h)
+                alu_car_pos  = (DraftVecUtils.scale(VZ, axis_h)
                 + DraftVecUtils.scale(VZ, alu_carr_trav_h)
                 + linbear_pos_y +
                 + DraftVecUtils.scale(VY,it_y*d_linbear_house['bolt_sep_l']))
@@ -285,20 +297,19 @@ for x_i in [-1,1]:  # izquierda y derecha
                                              ref_w = 1, # centered
                                              ref_p = 2, # at bottom
                                              wfco = 1,
-                                             pos = alu_car_pos,
+                                             pos = alu_car_pos + pos_0,
                                              name = alu_car_name)
                 h_alu.color(carro_color)
-        #perfiles verticales del portico
-        if y_i == 0: # solo hay uno por cada lado
-            for it_x in[0,1]: # a double profile
-                alu_port_name = 'alu_port_v' + str_neg(x_i,p=1, n=0)
-                alu_port_v_pos  = (pos_0 +  DraftVecUtils.scale(VZ, axis_h)
-                 + DraftVecUtils.scale(VX, x_i*(alu_len_w/2. +it_x*alu_w))
-                 + DraftVecUtils.scale(VZ, alu_carr_trav_h)
-                 + linbear_pos_y +
-                 + DraftVecUtils.scale(VY,alu_w))
+    #perfiles verticales del portico, no se si dobles a simples
+    # solo hay uno por cada lado
+    port_pos_y = linbear1_pos_y + DraftVecUtils.scale(VY,alu_w)
+    port_pos_z = DraftVecUtils.scale(VZ, axis_h + alu_carr_trav_h)
+    for it_x in[0,1]: # a double profile
+        alu_port_name = 'alu_port_v' + str_neg(x_i,p=1, n=0)
+        alu_port_v_pos  = (port_pos_y + port_pos_z
+           + DraftVecUtils.scale(VX,x_i*(port_sep + alu_len_w/2. +it_x*alu_w)))
                
-                h_alu = comps.getaluprof_dir(d_alu, length=alu_port_v_l,
+        h_alu = comps.getaluprof_dir(d_alu, length=alu_len_port_v,
                                       fc_axis_l = VZ,
                                       fc_axis_w = DraftVecUtils.scale(VX,x_i),
                                       fc_axis_p = VY,
@@ -306,12 +317,31 @@ for x_i in [-1,1]:  # izquierda y derecha
                                       ref_w = 2, # at the end
                                       ref_p = 1, # centered
                                       wfco = 1,
-                                      pos = alu_port_v_pos,
+                                      pos = alu_port_v_pos + pos_0,
                                       name = alu_port_name)
-                h_alu.color(carro_color)
+        h_alu.color(carro_color)
 
+topgantry_pos_z = port_pos_z + DraftVecUtils.scale(VZ, alu_len_port_v)
+topgantry_pos = port_pos_y + topgantry_pos_z
+h_alu_topgantry = comps.getaluprof_dir(d_alu, length=alu_len_gantry,
+                                      fc_axis_l = VX,
+                                      fc_axis_w = VY,
+                                      fc_axis_p = VZN,
+                                      ref_l = 1, # centered bottom
+                                      ref_w = 1, # centered
+                                      ref_p = 2, # at top
+                                      wfco = 1,
+                                      pos = topgantry_pos + pos_0,
+                                      name = 'top_gantry')
+h_alu_topgantry.color(carro_color)
 
-                
+"""
+for x_i in [-1,1]:  # izquierda y derecha
+    alu_name = 'alu_largo_base' + '_x' + str_neg(x_i)
+    alu_base_largo_pos = (DraftVecUtils.scale(VX, x_i*tot_w/2) 
+                             + DraftVecUtils.scale(VY, alu_w/2) )
+alu_len_empuje_v
+"""
 
 min_mesa_h = axis_h + alu_carr_trav_h + alu_w
 print('altura entre perfil de la base (top) y perfil del carro (top): ')
@@ -330,7 +360,11 @@ file_comps.write('perfiles del carro 2x30x30 (dobles) \n')
 file_comps.write('2 x ' + str(alu_car_l) + '\n')
 
 file_comps.write('perfiles del portico 2x30x30 (dobles) \n')
-file_comps.write('2 x ' + str(alu_port_v_l) + '\n')
+file_comps.write('2 x ' + str(alu_len_port_v) + '\n')
+file_comps.write('también pueden ser simples 30x30 \n')
+file_comps.write('2 x ' + str(alu_len_port_v) + '\n')
+file_comps.write('puente del portico \n')
+file_comps.write('1 x ' + str(alu_len_gantry) + '\n')
 
 
 file_comps.write('altura entre perfil de la base (top) y perfil de carro (top): ')
