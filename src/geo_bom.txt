@@ -1,14 +1,25 @@
-perfiles de la base y mesa 30x30 
+perfiles de la base y mesa 30x30, travesanos: 
 4 x 800 
-      perfil interno soporte husillo 
-2 x 740 
-4 x 1060
+      perfil interno soporte husillo (alguno mas) 
+4 x 740 
+perfiles que bajan del portico para empujar
+4 x 250
+perfiles que bajan del portico para empujar (otra altura)
+4 x 200
+perfil de la base del empuje
+740
+perfil de la base del empuje: extras (-60)
+680
+perfil de la base del empuje: extras (-120)
+620
+largueros de la base, dos más a lo largo 
+6 x 1060
 perfiles del carro 2x30x30 (dobles) 
 2 x 980
 perfiles del portico 2x30x30 (dobles) 
-2 x 350.0
+2 x 400
 también pueden ser simples 30x30 
-2 x 350.0
+2 x 400
 puente del portico 
 1 x 810.0
 altura entre perfil de la base (top) y perfil de carro (top): 82.0

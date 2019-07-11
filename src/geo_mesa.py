@@ -130,7 +130,7 @@ tot_w = 800 #ancho
 alu_w = 30 # ancho de los perfiles
 
 alu_len_d = tot_d + 2 * alu_w  #perfiles a lo largo (profundo)
-alu_len_v = 100  #perfiles a lo alto REVISAR
+alu_len_v = 100  #perfiles a lo alto para mesa REVISAR
 alu_len_w = tot_w #perfiles a lo ancho
 alu_len_w_int = tot_w -  2 * alu_w #perfiles a lo ancho interiores
 
@@ -142,7 +142,7 @@ alu_len_gantry = tot_w + 10. # poner un extra para que no rocen
 alu_car_l = tot_w + 2*3*alu_w
 
 carro_color = fcfun.ORANGE_08
-d_color = fcfun.GREEN_07
+empuje_color = fcfun.GREEN_07
 w_color = fcfun.BLUE_07
 
 d_alu = kcomp.ALU_PROF[alu_w]
@@ -159,13 +159,15 @@ pos_0 = FreeCAD.Vector(pos_0_x, pos_0_y, pos_0_z)
 rod_d = 20. #diameter of the rods
 
 leadscrew_tot_l = 500.
-leadscrew_d = 16. # or 12.
+leadscrew_motor_space_l = 30.
+leadscrew_int_l = leadscrew_tot_l - leadscrew_motor_space_l
+leadscrew_d = 12 # trapecial, or 16.
 
 # perfiles del portico en altura
-alu_len_port_v = 400.
+alu_len_port_v = 400
 
 # perfiles que bajan del portico para empujar
-alu_len_empuje_v = 250.
+alu_len_empuje_v = 250
 
 alu_tray_name = 'alu_tray'
 
@@ -202,7 +204,7 @@ for y_i in [0,1]:  #
                              name = sh_name)
 
 # travesano interno para el final del husillo y su soporte
-alu_base_traves_int_pos = DraftVecUtils.scale(VY, leadscrew_tot_l)
+alu_base_traves_int_pos = DraftVecUtils.scale(VY, leadscrew_int_l-alu_w/2)
 h_alu = comps.getaluprof_dir(d_alu, length=alu_len_w_int,
                                  fc_axis_l = VX,
                                  fc_axis_w = VY,
@@ -215,10 +217,10 @@ h_alu = comps.getaluprof_dir(d_alu, length=alu_len_w_int,
                                  name = 'travesano_int')
 
 
-file_comps.write('perfiles de la base y mesa 30x30 \n')
+file_comps.write('perfiles de la base y mesa 30x30, travesanos: \n')
 file_comps.write('4 x ' + str(alu_len_w) + ' \n')
-file_comps.write('      perfil interno soporte husillo \n')
-file_comps.write('2 x ' + str(alu_len_w_int) + ' \n')
+file_comps.write('      perfil interno soporte husillo (alguno mas) \n')
+file_comps.write('4 x ' + str(alu_len_w_int) + ' \n')
 
 # height of the axis, from pos_0
 axis_h = h_sh8.axis_h
@@ -335,13 +337,58 @@ h_alu_topgantry = comps.getaluprof_dir(d_alu, length=alu_len_gantry,
                                       name = 'top_gantry')
 h_alu_topgantry.color(carro_color)
 
-"""
+empuje_v_pos_z = topgantry_pos_z + DraftVecUtils.scale(VZN, alu_w)
+
+# perfiles que bajan del portico para empujar
 for x_i in [-1,1]:  # izquierda y derecha
-    alu_name = 'alu_largo_base' + '_x' + str_neg(x_i)
-    alu_base_largo_pos = (DraftVecUtils.scale(VX, x_i*tot_w/2) 
-                             + DraftVecUtils.scale(VY, alu_w/2) )
-alu_len_empuje_v
-"""
+    alu_name = 'alu_empuje_v' + '_x' + str_neg(x_i, p=1)
+    empuje_v_pos_x = DraftVecUtils.scale(VX, x_i * alu_len_w_int/2.)
+    empuje_v_pos = empuje_v_pos_x + port_pos_y + empuje_v_pos_z 
+    h_alu_empuje_v = comps.getaluprof_dir(d_alu, length=alu_len_empuje_v,
+                                      fc_axis_l = VZN,
+                                      fc_axis_w = DraftVecUtils.scale(VXN,x_i),
+                                      fc_axis_p = VY,
+                                      ref_l = 2, # from top
+                                      ref_w = 2, # from outer side
+                                      ref_p = 1, # centered
+                                      wfco = 1,
+                                      pos = empuje_v_pos + pos_0,
+                                      name = alu_port_name)
+    h_alu_empuje_v.color(empuje_color)
+
+
+file_comps.write('perfiles que bajan del portico para empujar\n')
+file_comps.write('4 x ' + str(alu_len_empuje_v) + '\n')
+
+file_comps.write('perfiles que bajan del portico para empujar (otra altura)\n')
+file_comps.write('4 x ' + str(alu_len_empuje_v-50) + '\n')
+
+# perfil de la base del empuje
+base_empuje_pos_z = empuje_v_pos_z + DraftVecUtils.scale(VZN, alu_len_empuje_v)
+base_empuje_pos = port_pos_y + base_empuje_pos_z 
+h_alu_base_empuje = comps.getaluprof_dir(d_alu, length=alu_len_w_int,
+                                      fc_axis_l = VX,
+                                      fc_axis_w = VY,
+                                      fc_axis_p = VZN,
+                                      ref_l = 1, # from top
+                                      ref_w = 1, # from outer side
+                                      ref_p = 2, # from top
+                                      wfco = 1,
+                                      pos = base_empuje_pos + pos_0,
+                                      name = 'alu_base_empuje')
+h_alu_base_empuje.color(empuje_color)
+
+
+file_comps.write('perfil de la base del empuje\n')
+file_comps.write( str(alu_len_w_int) + '\n')
+
+file_comps.write('perfil de la base del empuje: extras (-60)\n')
+file_comps.write( str(alu_len_w_int-60) + '\n')
+
+file_comps.write('perfil de la base del empuje: extras (-120)\n')
+file_comps.write( str(alu_len_w_int-120) + '\n')
+
+
 
 min_mesa_h = axis_h + alu_carr_trav_h + alu_w
 print('altura entre perfil de la base (top) y perfil del carro (top): ')
@@ -355,7 +402,8 @@ print (str(mesa_h))
 
 
 
-file_comps.write('4 x ' + str(alu_len_d) + '\n')
+file_comps.write('largueros de la base, dos más a lo largo \n')
+file_comps.write('6 x ' + str(alu_len_d) + '\n')
 file_comps.write('perfiles del carro 2x30x30 (dobles) \n')
 file_comps.write('2 x ' + str(alu_car_l) + '\n')
 
@@ -388,6 +436,8 @@ for x_i in [-1,1]:  # izquierda y derecha
                                    pos = pos_alu_v,
                                    name = 'alu_v')
 
+#Perfiles de la mesa, ya contabilizados arriba, porque son las mismas
+# dimensiones que la base
 
 for y_i in [0,1]:  # 
     alu_name = 'alu_travesano_mesa' + '_y' + str(y_i)
@@ -422,6 +472,55 @@ for x_i in [-1,1]:  # izquierda y derecha
                                  wfco = 1,
                                  pos = alu_mesa_largo_pos,
                                  name = alu_name)
+
+
+# Pillow block soporte de husillo (dibujo aproximado)
+for y_i in [0,1]:  # delante detras
+    pillow_pos = DraftVecUtils.scale(VY, y_i*(leadscrew_int_l-alu_w/2)) 
+    pillow_name = 'pillow_' + '_y' + str(y_i) 
+    h_pillow = comps.Sk_dir(size=leadscrew_d,
+                             fc_axis_h = VZ,
+                             fc_axis_d = VY,
+                             fc_axis_w = VX,
+                             ref_hr = 0,
+                             ref_wc = 1, #centered
+                             ref_dc = 1,
+                             pillow = 1,
+                             tol=0, # not to print
+                             pos= pillow_pos + pos_0,
+                             name = pillow_name)
+
+
+# tornillo sin fin
+leads_pos = ( DraftVecUtils.scale(VZ, h_pillow.axis_h)
+            + DraftVecUtils.scale(VYN, alu_w/2))
+shp_leads = fcfun.shp_cyl_gen(r = leadscrew_d/2., h=leadscrew_tot_l,
+                              axis_h = VY,
+                              pos_h = 1,
+                              pos = leads_pos + pos_0)
+Part.show(shp_leads)
+
+
+motor_pos = leads_pos + DraftVecUtils.scale(VY,leadscrew_tot_l)
+nema_motor = comps.PartNemaMotor (
+                              nema_size = 23,
+                              base_l = 56.,
+                              shaft_l = 21.,
+                              shaft_r = 6.35/2.,
+                              circle_r = 47.14/2.,
+                              circle_h = 1.6,
+                              #chmf_r = chmf_r, 
+                              rear_shaft_l= 0,
+                              bolt_depth = 5.,
+                              #bolt_out  = 0,
+                              #cut_extra = 0,
+                              axis_d = VZ,
+                              axis_w = VX,
+                              axis_h = VYN,
+                              pos_d = 0,
+                              pos_w = 0,
+                              pos_h = 2,
+                              pos = motor_pos + pos_0)
 
 
 file_comps.close()
