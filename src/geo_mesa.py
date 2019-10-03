@@ -259,6 +259,7 @@ for x_i in [-1,1]:  # izquierda y derecha
     axis_pos = (DraftVecUtils.scale(VX, x_i*(tot_w/2-axis_cen_w)) 
                       + DraftVecUtils.scale(VY, -alu_w/2)
                       + DraftVecUtils.scale(VZ, axis_h)  )
+    
     shp_rod = fcfun.shp_cyl_gen(r = rod_d/2., h=axis_len,
                               axis_h = VY,
                               pos_h = 1,
@@ -363,6 +364,9 @@ file_comps.write('4 x ' + str(alu_len_empuje_v) + '\n')
 file_comps.write('perfiles que bajan del portico para empujar (otra altura)\n')
 file_comps.write('4 x ' + str(alu_len_empuje_v-50) + '\n')
 
+file_comps.write('\n2 Ejes: \n')
+file_comps.write('largo:' + str(axis_len) + '  diametro :' + str(rod_d) + '\n\n')
+
 # perfil de la base del empuje
 base_empuje_pos_z = empuje_v_pos_z + DraftVecUtils.scale(VZN, alu_len_empuje_v)
 base_empuje_pos = port_pos_y + base_empuje_pos_z 
@@ -377,6 +381,13 @@ h_alu_base_empuje = comps.getaluprof_dir(d_alu, length=alu_len_w_int,
                                       pos = base_empuje_pos + pos_0,
                                       name = 'alu_base_empuje')
 h_alu_base_empuje.color(empuje_color)
+
+
+file_comps.write('largueros de la base y mesa, dos más a lo largo \n')
+file_comps.write('6 x ' + str(alu_len_d) + '\n')
+file_comps.write('perfiles del carro 2x30x30 (dobles) \n')
+file_comps.write('2 x ' + str(alu_car_l) + '\n')
+
 
 
 file_comps.write('perfil de la base del empuje\n')
@@ -402,10 +413,6 @@ print (str(mesa_h))
 
 
 
-file_comps.write('largueros de la base, dos más a lo largo \n')
-file_comps.write('6 x ' + str(alu_len_d) + '\n')
-file_comps.write('perfiles del carro 2x30x30 (dobles) \n')
-file_comps.write('2 x ' + str(alu_car_l) + '\n')
 
 file_comps.write('perfiles del portico 2x30x30 (dobles) \n')
 file_comps.write('2 x ' + str(alu_len_port_v) + '\n')
